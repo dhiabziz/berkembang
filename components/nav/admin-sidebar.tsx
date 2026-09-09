@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, LayoutDashboard, LogOut, Users } from 'lucide-react'
+import { BookOpen, ClipboardList, LayoutDashboard, LogOut, Users } from 'lucide-react'
 
 import { logout } from '@/app/admin/actions/auth'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/mentees', label: 'Mentees', icon: Users },
   { href: '/admin/tasks', label: 'Tasks', icon: ClipboardList },
+  { href: '/admin/books', label: 'Books', icon: BookOpen },
 ]
 
 export function AdminSidebar() {

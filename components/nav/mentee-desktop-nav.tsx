@@ -2,15 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, LogOut, Trophy, User } from 'lucide-react'
+import { Award, BookOpen, ClipboardList, LogOut, Trophy, User } from 'lucide-react'
 
 import { logout } from '@/app/admin/actions/auth'
 import { cn } from '@/lib/utils'
 
-const BASE_NAV_ITEMS = [{ href: '/mentee/leaderboard', label: 'Leaderboard', icon: Trophy }]
+const BASE_NAV_ITEMS = [
+  { href: '/mentee/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/mentee/books', label: 'Books', icon: BookOpen },
+]
 const MENTEE_ONLY_ITEMS = [
   { href: '/mentee/tasks', label: 'Tasks', icon: ClipboardList },
-  { href: '/mentee/my-points', label: 'My points', icon: User },
+  { href: '/mentee/my-points', label: 'My points', icon: Award },
+  { href: '/mentee/profile', label: 'Profile', icon: User },
 ]
 
 export function MenteeDesktopNav({ role }: { role: 'admin' | 'mentee' }) {

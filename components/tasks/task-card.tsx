@@ -1,6 +1,6 @@
 import { Check, Clock, Sparkles } from 'lucide-react'
 
-import { cn, formatDate, getDeadlineStatus } from '@/lib/utils'
+import { cn, formatDateTime, getDeadlineInfo } from '@/lib/utils'
 
 interface TaskAssignment {
   menteeName: string
@@ -19,12 +19,22 @@ interface TaskCardProps {
 // implements FR-22, FR-25, FR-33
 export function TaskCard({ title, description, deadline, type, assignments }: TaskCardProps) {
   const isRare = type === 'special'
-  const deadlineStatus = getDeadlineStatus(deadline)
   const me = assignments.find((a) => a.isCurrentUser)
   const others = assignments.filter((a) => !a.isCurrentUser)
+  const isSubmittedByMe = me?.status === 'submitted'
+
+  const deadlineInfo = getDeadlineInfo(deadline)
+  const showOverdueAlert = deadlineInfo.variant === 'overdue' && !isSubmittedByMe
 
   return (
-    <div className={cn('relative rounded-xl p-4', isRare ? 'card-rare' : 'border border-border bg-white shadow-sm')}>
+    <div
+      className={cn(
+        'relative rounded-xl p-4',
+        isRare ? 'card-rare' : 'border border-border bg-white shadow-sm',
+        showOverdueAlert && 'border-2 border-destructive',
+        showOverdueAlert && !isRare && 'bg-destructive/5'
+      )}
+    >
       {isRare && (
         <span className="badge-rare">
           <Sparkles size={10} className="mr-1 inline" />
@@ -35,11 +45,23 @@ export function TaskCard({ title, description, deadline, type, assignments }: Ta
       <h3 className="text-lg font-semibold">{title}</h3>
       {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
 
-      <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Clock size={14} />
-        {formatDate(deadline)}
-        {deadlineStatus === 'overdue' && <span className="font-semibold text-destructive">Overdue ⚠️</span>}
-        {deadlineStatus === 'due-tomorrow' && <span className="font-semibold text-accent-foreground">Due tomorrow!</span>}
+      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <span className="flex items-center gap-1 text-muted-foreground">
+          <Clock size={14} />
+          {formatDateTime(deadline)}
+        </span>
+        {!isSubmittedByMe && (
+          <span
+            className={cn(
+              'font-semibold',
+              deadlineInfo.variant === 'overdue' && 'text-destructive',
+              deadlineInfo.variant === 'urgent' && 'text-accent-foreground',
+              deadlineInfo.variant === 'normal' && 'text-muted-foreground'
+            )}
+          >
+            {deadlineInfo.label}
+          </span>
+        )}
       </div>
 
       {me && (

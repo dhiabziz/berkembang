@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth/session'
 import { createTaskSchema } from '@/lib/schemas/task'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { wibLocalToIso } from '@/lib/utils'
 
 export interface TaskActionState {
   error?: string
@@ -32,10 +33,11 @@ export async function createTask(_prevState: TaskActionState, formData: FormData
   }
 
   const { title, description, deadline, type, menteeIds } = parsed.data
+  const deadlineIso = wibLocalToIso(deadline)
 
   const { data: task, error: insertError } = await supabaseAdmin
     .from('tasks')
-    .insert({ title, description: description || null, deadline, type })
+    .insert({ title, description: description || null, deadline: deadlineIso, type })
     .select('id')
     .single()
 

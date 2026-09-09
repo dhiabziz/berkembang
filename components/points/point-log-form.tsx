@@ -14,14 +14,16 @@ const initialState: PointLogActionState = {}
 export function PointLogForm({ menteeId, menteeName }: { menteeId: string; menteeName: string }) {
   const [state, formAction, isPending] = useActionState(addPointLog.bind(null, menteeId), initialState)
   const formRef = useRef<HTMLFormElement>(null)
+  const wasPending = useRef(false)
 
   useEffect(() => {
-    if (state.success !== undefined) {
+    if (wasPending.current && !isPending && !state.error && state.success !== undefined) {
       const points = state.success
       toast.success(`${points > 0 ? '+' : ''}${points} points for ${menteeName}`)
       formRef.current?.reset()
     }
-  }, [state.success, menteeName])
+    wasPending.current = isPending
+  }, [isPending, state.error, state.success, menteeName])
 
   return (
     <form ref={formRef} action={formAction} className="rounded-xl border border-border bg-white p-4 shadow-sm">

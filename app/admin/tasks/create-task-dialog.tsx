@@ -23,15 +23,17 @@ export function CreateTaskDialog({ mentees }: { mentees: Mentee[] }) {
   const [type, setType] = useState<'broadcast' | 'special'>('broadcast')
   const [state, formAction, isPending] = useActionState(createTask, initialState)
   const formRef = useRef<HTMLFormElement>(null)
+  const wasPending = useRef(false)
 
   useEffect(() => {
-    if (state.success) {
+    if (wasPending.current && !isPending && !state.error) {
       toast.success('Task created successfully')
       formRef.current?.reset()
       setType('broadcast')
       setOpen(false)
     }
-  }, [state.success])
+    wasPending.current = isPending
+  }, [isPending, state.error])
 
   return (
     <>
@@ -51,8 +53,8 @@ export function CreateTaskDialog({ mentees }: { mentees: Mentee[] }) {
             <Input id="description" name="description" type="text" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="deadline">Deadline</Label>
-            <Input id="deadline" name="deadline" type="date" required />
+            <Label htmlFor="deadline">Deadline (WIB)</Label>
+            <Input id="deadline" name="deadline" type="datetime-local" required />
           </div>
 
           <div className="space-y-1.5">

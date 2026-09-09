@@ -30,19 +30,40 @@ export function formatPoints(points: number) {
   return points > 0 ? `+${points}` : `${points}`
 }
 
-function getTodayWIB() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
+function toWIBDateString(date: Date) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(date)
 }
 
-// deadline is a plain DATE (YYYY-MM-DD); compare calendar dates as strings against "today" in WIB.
-export function getDeadlineStatus(deadline: string): 'overdue' | 'due-tomorrow' | null {
-  const today = getTodayWIB()
-  if (deadline < today) return 'overdue'
+// Converts a "YYYY-MM-DDTHH:mm" datetime-local value (entered by the admin, meant as WIB
+// wall-clock time) into a UTC ISO string, so it stores/compares correctly regardless of the
+// server's runtime timezone (Vercel serverless functions run in UTC).
+export function wibLocalToIso(datetimeLocal: string): string {
+  return new Date(`${datetimeLocal}:00+07:00`).toISOString()
+}
 
-  const tomorrow = new Date(`${today}T00:00:00Z`)
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10)
+// deadline is a TIMESTAMPTZ. Precise overdue check uses the exact instant; the day-count
+// summary compares WIB calendar dates for a friendlier "N days left / overdue" label.
+export function getDeadlineInfo(deadlineIso: string): {
+  variant: 'overdue' | 'urgent' | 'normal'
+  label: string
+} {
+  const deadline = new Date(deadlineIso)
+  const now = new Date()
+  const isOverdue = deadline.getTime() < now.getTime()
 
-  if (deadline === tomorrowStr) return 'due-tomorrow'
-  return null
+  const deadlineDateOnly = new Date(`${toWIBDateString(deadline)}T00:00:00Z`)
+  const todayDateOnly = new Date(`${toWIBDateString(now)}T00:00:00Z`)
+  const dayDiff = Math.round((deadlineDateOnly.getTime() - todayDateOnly.getTime()) / 86_400_000)
+
+  if (isOverdue) {
+    const days = Math.abs(dayDiff)
+    return {
+      variant: 'overdue',
+      label: days === 0 ? 'Overdue today ⚠️' : `Overdue by ${days} day${days > 1 ? 's' : ''} ⚠️`,
+    }
+  }
+
+  if (dayDiff === 0) return { variant: 'urgent', label: 'Due today!' }
+  if (dayDiff === 1) return { variant: 'urgent', label: 'Due tomorrow!' }
+  return { variant: 'normal', label: `${dayDiff} days left` }
 }

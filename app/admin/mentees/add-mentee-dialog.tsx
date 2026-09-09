@@ -17,14 +17,16 @@ export function AddMenteeDialog() {
   const [open, setOpen] = useState(false)
   const [state, formAction, isPending] = useActionState(createMentee, initialState)
   const formRef = useRef<HTMLFormElement>(null)
+  const wasPending = useRef(false)
 
   useEffect(() => {
-    if (state.success) {
+    if (wasPending.current && !isPending && !state.error && state.success) {
       toast.success(`Mentee ${state.success} added successfully`)
       formRef.current?.reset()
       setOpen(false)
     }
-  }, [state.success])
+    wasPending.current = isPending
+  }, [isPending, state.error, state.success])
 
   return (
     <>

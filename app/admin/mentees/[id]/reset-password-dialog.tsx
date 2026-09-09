@@ -17,14 +17,16 @@ export function ResetPasswordDialog({ menteeId, menteeName }: { menteeId: string
   const [open, setOpen] = useState(false)
   const [state, formAction, isPending] = useActionState(resetMenteePassword.bind(null, menteeId), initialState)
   const formRef = useRef<HTMLFormElement>(null)
+  const wasPending = useRef(false)
 
   useEffect(() => {
-    if (state.success) {
+    if (wasPending.current && !isPending && !state.error) {
       toast.success(`Password for ${menteeName} reset successfully`)
       formRef.current?.reset()
       setOpen(false)
     }
-  }, [state.success, menteeName])
+    wasPending.current = isPending
+  }, [isPending, state.error, menteeName])
 
   return (
     <>

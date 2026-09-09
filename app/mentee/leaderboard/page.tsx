@@ -23,7 +23,7 @@ export default async function LeaderboardPage() {
       {!mentees || mentees.length === 0 ? (
         <EmptyState icon={Trophy} heading="No mentees yet" description="Check back once the program gets going!" />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {mentees.map((mentee, index) => {
             // FR-17: mentee can only open their own detail. FR-18: admin can open anyone's.
             const href =

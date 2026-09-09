@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { TaskChecklist } from '@/components/tasks/task-checklist'
 import { PageHeader } from '@/components/shared/page-header'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { formatDate } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 
 function getUsername(users: unknown): string {
   if (Array.isArray(users)) {
@@ -39,7 +39,7 @@ export default async function AdminTaskDetailPage({ params }: { params: Promise<
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
-      <PageHeader title={task.title} description={`Due ${formatDate(task.deadline)}`} />
+      <PageHeader title={task.title} description={`Due ${formatDateTime(task.deadline)}`} />
       {task.description && <p className="mb-4 text-sm text-muted-foreground">{task.description}</p>}
       <TaskChecklist taskId={task.id} assignments={checklistItems} />
     </main>

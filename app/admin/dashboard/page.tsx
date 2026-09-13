@@ -16,7 +16,7 @@ export default async function AdminDashboardPage() {
     { count: menteeCount },
     { count: activeTaskCount },
     { count: overdueTaskCount },
-    { data: topMentees },
+    { data: mentees },
     levels,
   ] = await Promise.all([
     supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('role', 'mentee'),
@@ -30,8 +30,7 @@ export default async function AdminDashboardPage() {
       .from('users')
       .select('id, username, avatar_url, total_points')
       .eq('role', 'mentee')
-      .order('total_points', { ascending: false })
-      .limit(3),
+      .order('total_points', { ascending: false }),
     getGrowthLevels(),
   ])
 
@@ -71,19 +70,14 @@ export default async function AdminDashboardPage() {
         })}
       </div>
 
-      {topMentees && topMentees.length > 0 && (
+      {mentees && mentees.length > 0 && (
         <div className="mt-8">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <Trophy size={18} className="text-gold" />
-              Top mentees
-            </h2>
-            <Link href="/mentee/leaderboard" className="text-sm font-medium text-primary hover:underline">
-              View leaderboard
-            </Link>
-          </div>
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+            <Trophy size={18} className="text-gold" />
+            Leaderboard
+          </h2>
           <div className="space-y-4">
-            {topMentees.map((mentee, index) => (
+            {mentees.map((mentee, index) => (
               <LeaderboardCard
                 key={mentee.id}
                 rank={index + 1}

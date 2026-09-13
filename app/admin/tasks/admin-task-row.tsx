@@ -1,11 +1,12 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { Archive, Sparkles } from 'lucide-react'
+import { Sparkles, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { archiveTask } from '@/app/admin/actions/tasks'
+import { deleteTask } from '@/app/admin/actions/tasks'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { cn, formatDateTime, getDeadlineInfo } from '@/lib/utils'
 
@@ -20,23 +21,21 @@ interface AdminTaskRowProps {
   }
 }
 
-// UC-15: Admin Archive Tugas
 export function AdminTaskRow({ task }: AdminTaskRowProps) {
-  const [isPending, startTransition] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const submittedCount = task.task_assignments.filter((a) => a.status === 'submitted').length
   const totalCount = task.task_assignments.length
   const deadlineInfo = getDeadlineInfo(task.deadline)
-  const hasOverdueMentees = !task.is_archived && deadlineInfo.variant === 'overdue' && submittedCount < totalCount
+  const hasOverdueMentees = deadlineInfo.variant === 'overdue' && submittedCount < totalCount
 
-  function handleArchive() {
-    startTransition(async () => {
-      const result = await archiveTask(task.id)
-      if (result.error) {
-        toast.error(result.error)
-        return
-      }
-      toast.success('Task archived')
-    })
+  async function handleDelete() {
+    const result = await deleteTask(task.id)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('Task deleted')
+    setConfirmOpen(false)
   }
 
   return (
@@ -61,11 +60,19 @@ export function AdminTaskRow({ task }: AdminTaskRowProps) {
           {hasOverdueMentees && ` · ${deadlineInfo.label}`}
         </p>
       </Link>
-      {!task.is_archived && (
-        <Button variant="ghost" size="icon" disabled={isPending} onClick={handleArchive} aria-label="Archive task">
-          <Archive size={16} />
-        </Button>
-      )}
+      <Button variant="ghost" size="icon" onClick={() => setConfirmOpen(true)} aria-label={`Delete ${task.title}`}>
+        <Trash2 size={16} className="text-destructive" />
+      </Button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete this task?"
+        description="This will permanently remove the task and everyone's submission status. This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   )
 }

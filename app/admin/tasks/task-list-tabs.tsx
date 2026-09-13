@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ClipboardList } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/empty-state'
-import { cn } from '@/lib/utils'
+import { cn, isTaskArchived } from '@/lib/utils'
 
 import { AdminTaskRow } from './admin-task-row'
 
@@ -24,7 +24,14 @@ const TABS = [
 
 export function TaskListTabs({ tasks }: { tasks: Task[] }) {
   const [tab, setTab] = useState<'active' | 'archived'>('active')
-  const filtered = tasks.filter((task) => (tab === 'active' ? !task.is_archived : task.is_archived))
+  const filtered = tasks.filter((task) => {
+    const archived = isTaskArchived(
+      task.is_archived,
+      task.deadline,
+      task.task_assignments.map((a) => a.status)
+    )
+    return tab === 'active' ? !archived : archived
+  })
 
   return (
     <div>

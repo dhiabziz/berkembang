@@ -91,17 +91,18 @@ export async function markTaskSubmitted(taskId: string, menteeId: string): Promi
   return {}
 }
 
-// UC-15: Admin Archive Tugas — implements FR-24
-export async function archiveTask(taskId: string): Promise<{ error?: string }> {
+// Tasks now archive automatically (deadline passed or everyone submitted — see lib/utils.ts
+// isTaskArchived), so the only admin action left is a permanent delete.
+export async function deleteTask(taskId: string): Promise<{ error?: string }> {
   const session = await getSession()
   if (session.role !== 'admin') {
     return { error: 'Unauthorized.' }
   }
 
-  const { error } = await supabaseAdmin.from('tasks').update({ is_archived: true }).eq('id', taskId)
+  const { error } = await supabaseAdmin.from('tasks').delete().eq('id', taskId)
 
   if (error) {
-    return { error: 'Failed to archive task. Try again.' }
+    return { error: 'Failed to delete task. Try again.' }
   }
 
   revalidatePath('/admin/tasks')

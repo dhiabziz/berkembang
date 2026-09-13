@@ -67,3 +67,13 @@ export function getDeadlineInfo(deadlineIso: string): {
   if (dayDiff === 1) return { variant: 'urgent', label: 'Due tomorrow!' }
   return { variant: 'normal', label: `${dayDiff} days left` }
 }
+
+// A task is archived automatically once its deadline has passed or every assignee has
+// submitted — no manual "archive" action needed. `isArchivedFlag` is kept only so legacy
+// rows that were manually archived before this change still show as archived.
+export function isTaskArchived(isArchivedFlag: boolean, deadlineIso: string, assignmentStatuses: string[]): boolean {
+  if (isArchivedFlag) return true
+  if (new Date(deadlineIso).getTime() < Date.now()) return true
+  if (assignmentStatuses.length > 0 && assignmentStatuses.every((status) => status === 'submitted')) return true
+  return false
+}

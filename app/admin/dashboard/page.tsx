@@ -3,6 +3,7 @@ import { ClipboardList, Trophy, Users } from 'lucide-react'
 
 import { LeaderboardCard } from '@/components/leaderboard/leaderboard-card'
 import { getSession } from '@/lib/auth/session'
+import { getGrowthLevels } from '@/lib/data/growth-levels'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { cn } from '@/lib/utils'
 
@@ -11,22 +12,28 @@ export default async function AdminDashboardPage() {
   const session = await getSession()
   const nowIso = new Date().toISOString()
 
-  const [{ count: menteeCount }, { count: activeTaskCount }, { count: overdueTaskCount }, { data: topMentees }] =
-    await Promise.all([
-      supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('role', 'mentee'),
-      supabaseAdmin.from('tasks').select('id', { count: 'exact', head: true }).eq('is_archived', false),
-      supabaseAdmin
-        .from('tasks')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_archived', false)
-        .lt('deadline', nowIso),
-      supabaseAdmin
-        .from('users')
-        .select('id, username, avatar_url, total_points')
-        .eq('role', 'mentee')
-        .order('total_points', { ascending: false })
-        .limit(3),
-    ])
+  const [
+    { count: menteeCount },
+    { count: activeTaskCount },
+    { count: overdueTaskCount },
+    { data: topMentees },
+    levels,
+  ] = await Promise.all([
+    supabaseAdmin.from('users').select('id', { count: 'exact', head: true }).eq('role', 'mentee'),
+    supabaseAdmin.from('tasks').select('id', { count: 'exact', head: true }).eq('is_archived', false),
+    supabaseAdmin
+      .from('tasks')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_archived', false)
+      .lt('deadline', nowIso),
+    supabaseAdmin
+      .from('users')
+      .select('id, username, avatar_url, total_points')
+      .eq('role', 'mentee')
+      .order('total_points', { ascending: false })
+      .limit(3),
+    getGrowthLevels(),
+  ])
 
   const stats = [
     { label: 'Mentees', value: menteeCount ?? 0, icon: Users, href: '/admin/mentees', danger: false },
@@ -83,6 +90,7 @@ export default async function AdminDashboardPage() {
                 name={mentee.username}
                 avatarUrl={mentee.avatar_url}
                 totalPoints={mentee.total_points}
+                levels={levels}
               />
             ))}
           </div>

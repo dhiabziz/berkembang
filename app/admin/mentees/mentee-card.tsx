@@ -10,16 +10,18 @@ import { GrowthBadge } from '@/components/leaderboard/growth-badge'
 import { Avatar } from '@/components/shared/avatar'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { Button } from '@/components/ui/button'
+import type { GrowthLevel } from '@/lib/constants/growth-levels'
 
 interface MenteeCardProps {
   id: string
   username: string
   avatarUrl: string | null
   totalPoints: number
+  levels: GrowthLevel[]
 }
 
 // UC-07: Admin Hapus Mentee
-export function MenteeCard({ id, username, avatarUrl, totalPoints }: MenteeCardProps) {
+export function MenteeCard({ id, username, avatarUrl, totalPoints, levels }: MenteeCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   async function handleDelete() {
@@ -38,7 +40,7 @@ export function MenteeCard({ id, username, avatarUrl, totalPoints }: MenteeCardP
         <Avatar src={avatarUrl} name={username} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">{username}</p>
-          <GrowthBadge totalPoints={totalPoints} className="mt-1" />
+          <GrowthBadge totalPoints={totalPoints} levels={levels} className="mt-1" />
         </div>
       </Link>
       <Button variant="ghost" size="icon" onClick={() => setConfirmOpen(true)} aria-label={`Delete ${username}`}>

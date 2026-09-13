@@ -313,6 +313,25 @@ CREATE TABLE public.book_lendings (
 
 CREATE INDEX book_lendings_status_idx ON public.book_lendings (status, deadline);
 CREATE INDEX book_lendings_mentee_idx ON public.book_lendings (mentee_id);
+
+-- 6. Tabel growth_levels (admin-configurable milestone poin -> level pertumbuhan)
+CREATE TABLE public.growth_levels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  label TEXT NOT NULL,
+  emoji TEXT NOT NULL,
+  min_points INTEGER NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX growth_levels_min_points_idx ON public.growth_levels (min_points);
+
+-- Seed dengan 5 level default (bisa diedit/ditambah/dihapus lewat halaman Admin > Growth levels)
+INSERT INTO public.growth_levels (label, emoji, min_points) VALUES
+  ('Seed', '🌱', 0),
+  ('Sprout', '🌿', 100),
+  ('Bud', '🌷', 300),
+  ('Bloom', '🌸', 600),
+  ('Full Bloom', '🌺', 1000);
 ```
 
 ### Step 9: Seed admin user

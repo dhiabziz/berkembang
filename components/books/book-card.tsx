@@ -1,10 +1,11 @@
 'use client'
 
-import { useTransition } from 'react'
-import { Check } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { Check, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { markBookReturned } from '@/app/admin/actions/books'
+import { deleteBookLending, markBookReturned } from '@/app/admin/actions/books'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/utils'
 
@@ -16,6 +17,7 @@ interface BookCardProps {
   status: 'active' | 'returned'
   returnedAt?: string | null
   showReturnButton?: boolean
+  showDeleteButton?: boolean
   lendingId?: string
 }
 
@@ -28,9 +30,11 @@ export function BookCard({
   status,
   returnedAt,
   showReturnButton = false,
+  showDeleteButton = false,
   lendingId,
 }: BookCardProps) {
   const [isPending, startTransition] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   function handleMarkReturned() {
     if (!lendingId) return
@@ -42,6 +46,17 @@ export function BookCard({
       }
       toast.success(`${title} marked as returned`)
     })
+  }
+
+  async function handleDelete() {
+    if (!lendingId) return
+    const result = await deleteBookLending(lendingId)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(`${title} lending log deleted`)
+    setConfirmOpen(false)
   }
 
   return (
@@ -56,11 +71,30 @@ export function BookCard({
           {status === 'active' ? `Due ${formatDate(deadline)}` : `Returned ${formatDate(returnedAt ?? deadline)}`}
         </p>
       </div>
-      {showReturnButton && status === 'active' && (
-        <Button size="sm" variant="outline" disabled={isPending} onClick={handleMarkReturned}>
-          <Check size={14} className="mr-1" />
-          Returned
-        </Button>
+      <div className="flex shrink-0 items-start gap-1">
+        {showReturnButton && status === 'active' && (
+          <Button size="sm" variant="outline" disabled={isPending} onClick={handleMarkReturned}>
+            <Check size={14} className="mr-1" />
+            Returned
+          </Button>
+        )}
+        {showDeleteButton && (
+          <Button variant="ghost" size="icon" onClick={() => setConfirmOpen(true)} aria-label={`Delete ${title}`}>
+            <Trash2 size={16} className="text-destructive" />
+          </Button>
+        )}
+      </div>
+
+      {showDeleteButton && (
+        <ConfirmDialog
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={handleDelete}
+          title="Delete this lending log?"
+          description="This will permanently remove the record. This cannot be undone."
+          confirmLabel="Delete"
+          variant="destructive"
+        />
       )}
     </div>
   )

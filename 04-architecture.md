@@ -192,7 +192,7 @@ Cookie config:
 
 ## Database Schema (Ringkasan)
 
-Empat tabel utama + dua tabel relasi:
+Lima tabel utama + dua tabel relasi:
 
 ```mermaid
 erDiagram
@@ -247,7 +247,17 @@ erDiagram
         timestamptz returned_at "nullable"
         timestamptz created_at
     }
+
+    growth_levels {
+        uuid id PK
+        text label
+        text emoji
+        int min_points UK
+        timestamptz created_at
+    }
 ```
+
+`total_points` di tabel `users` adalah nilai denormalized yang di-recompute penuh (bukan increment/decrement) dari `SUM(point_logs.points)` setiap kali ada insert/delete log poin — lihat `lib/points.ts`. `growth_levels` diatur bebas oleh admin (bukan hardcoded) — level mentee dihitung dari level dengan `min_points` tertinggi yang masih `<= total_points`.
 
 SQL lengkap ada di `06-tech-stack.md` bagian Setup Supabase.
 

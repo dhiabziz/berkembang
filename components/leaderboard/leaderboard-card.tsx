@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Trophy } from 'lucide-react'
 
 import { Avatar } from '@/components/shared/avatar'
+import type { GrowthLevel } from '@/lib/constants/growth-levels'
 import { cn } from '@/lib/utils'
 
 import { GrowthBadge } from './growth-badge'
@@ -11,6 +12,7 @@ interface LeaderboardCardProps {
   name: string
   avatarUrl?: string | null
   totalPoints: number
+  levels: GrowthLevel[]
   href?: string
 }
 
@@ -27,7 +29,7 @@ const MEDAL_COLOR: Record<number, string> = {
 }
 
 // implements FR-16, FR-32
-export function LeaderboardCard({ rank, name, avatarUrl, totalPoints, href }: LeaderboardCardProps) {
+export function LeaderboardCard({ rank, name, avatarUrl, totalPoints, levels, href }: LeaderboardCardProps) {
   const isTopThree = rank <= 3
   const avatarSize = rank === 1 ? 'xl' : isTopThree ? 'lg' : 'md'
 
@@ -50,7 +52,7 @@ export function LeaderboardCard({ rank, name, avatarUrl, totalPoints, href }: Le
       <Avatar src={avatarUrl} name={name} size={avatarSize} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{name}</p>
-        <GrowthBadge totalPoints={totalPoints} className="mt-1" />
+        <GrowthBadge totalPoints={totalPoints} levels={levels} className="mt-1" />
       </div>
       <p className="font-mono text-xl font-bold tabular-nums text-primary">{totalPoints}</p>
     </div>

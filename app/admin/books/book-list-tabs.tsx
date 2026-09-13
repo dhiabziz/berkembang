@@ -62,6 +62,7 @@ export function BookListTabs({ lendings }: { lendings: Lending[] }) {
               status={lending.status}
               returnedAt={lending.returnedAt}
               showReturnButton
+              showDeleteButton
             />
           ))}
         </div>

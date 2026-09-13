@@ -1,22 +1,27 @@
-// implements FR-34
+// implements FR-34 — growth levels are now admin-configurable, stored in the `growth_levels` table
+// (see lib/data/growth-levels.ts for the DB fetch). This file only keeps the shared type + pure logic.
 export interface GrowthLevel {
-  level: 1 | 2 | 3 | 4 | 5
+  id: string
   minPoints: number
   label: string
   emoji: string
 }
 
-export const GROWTH_LEVELS: GrowthLevel[] = [
-  { level: 1, minPoints: 0, label: 'Seed', emoji: '🌱' },
-  { level: 2, minPoints: 100, label: 'Sprout', emoji: '🌿' },
-  { level: 3, minPoints: 300, label: 'Bud', emoji: '🌷' },
-  { level: 4, minPoints: 600, label: 'Bloom', emoji: '🌸' },
-  { level: 5, minPoints: 1000, label: 'Full Bloom', emoji: '🌺' },
+// Seed values used when the growth_levels table is first created — see the migration SQL.
+export const DEFAULT_GROWTH_LEVELS: Omit<GrowthLevel, 'id'>[] = [
+  { minPoints: 0, label: 'Seed', emoji: '🌱' },
+  { minPoints: 100, label: 'Sprout', emoji: '🌿' },
+  { minPoints: 300, label: 'Bud', emoji: '🌷' },
+  { minPoints: 600, label: 'Bloom', emoji: '🌸' },
+  { minPoints: 1000, label: 'Full Bloom', emoji: '🌺' },
 ]
 
-export function getGrowthLevel(totalPoints: number): GrowthLevel {
-  let current = GROWTH_LEVELS[0]
-  for (const level of GROWTH_LEVELS) {
+// `levels` must be sorted by minPoints ascending (getGrowthLevels() already orders it this way).
+export function getGrowthLevel(totalPoints: number, levels: GrowthLevel[]): GrowthLevel | null {
+  if (levels.length === 0) return null
+
+  let current = levels[0]
+  for (const level of levels) {
     if (totalPoints >= level.minPoints) {
       current = level
     }

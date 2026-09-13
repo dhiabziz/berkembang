@@ -74,6 +74,24 @@ export async function createBookLending(_prevState: BookActionState, formData: F
   return { success: true }
 }
 
+// admin delete of a book lending log — mirrors UC-10 (Admin Hapus Log Poin) for books
+export async function deleteBookLending(lendingId: string): Promise<{ error?: string }> {
+  const session = await getSession()
+  if (session.role !== 'admin') {
+    return { error: 'Unauthorized.' }
+  }
+
+  const { error } = await supabaseAdmin.from('book_lendings').delete().eq('id', lendingId)
+
+  if (error) {
+    return { error: 'Failed to delete lending. Try again.' }
+  }
+
+  revalidatePath('/admin/books')
+  revalidatePath('/mentee/books')
+  return {}
+}
+
 // UC-19: Admin Centang Buku Dikembalikan — implements FR-28
 export async function markBookReturned(lendingId: string): Promise<{ error?: string }> {
   const session = await getSession()

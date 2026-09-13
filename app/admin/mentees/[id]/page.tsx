@@ -5,6 +5,7 @@ import { PointLogForm } from '@/components/points/point-log-form'
 import { PointLogList } from '@/components/points/point-log-list'
 import { Avatar } from '@/components/shared/avatar'
 import { PageHeader } from '@/components/shared/page-header'
+import { getGrowthLevels } from '@/lib/data/growth-levels'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
 import { ResetPasswordDialog } from './reset-password-dialog'
@@ -13,21 +14,19 @@ import { ResetPasswordDialog } from './reset-password-dialog'
 export default async function MenteeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
-  const { data: mentee } = await supabaseAdmin
-    .from('users')
-    .select('id, username, avatar_url, total_points, role')
-    .eq('id', id)
-    .maybeSingle()
+  const [{ data: mentee }, { data: logs }, levels] = await Promise.all([
+    supabaseAdmin.from('users').select('id, username, avatar_url, total_points, role').eq('id', id).maybeSingle(),
+    supabaseAdmin
+      .from('point_logs')
+      .select('id, description, points, created_at')
+      .eq('mentee_id', id)
+      .order('created_at', { ascending: false }),
+    getGrowthLevels(),
+  ])
 
   if (!mentee || mentee.role !== 'mentee') {
     notFound()
   }
-
-  const { data: logs } = await supabaseAdmin
-    .from('point_logs')
-    .select('id, description, points, created_at')
-    .eq('mentee_id', id)
-    .order('created_at', { ascending: false })
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -40,7 +39,7 @@ export default async function MenteeDetailPage({ params }: { params: Promise<{ i
         <Avatar src={mentee.avatar_url} name={mentee.username} size="lg" />
         <div>
           <p className="font-mono text-2xl font-bold tabular-nums text-primary">{mentee.total_points} pts</p>
-          <GrowthBadge totalPoints={mentee.total_points} className="mt-1" />
+          <GrowthBadge totalPoints={mentee.total_points} levels={levels} className="mt-1" />
         </div>
       </div>
 

@@ -70,16 +70,22 @@ export function TaskCard({ title, description, deadline, type, assignments }: Ta
         </p>
       )}
 
-      {others.length > 0 && (
+      {assignments.length > 0 && (
         <div className="mt-3 space-y-1 border-t border-border pt-3">
-          {others.map((assignment) => (
-            <div key={assignment.menteeName} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {[...(me ? [me] : []), ...others].map((assignment) => (
+            <div
+              key={assignment.isCurrentUser ? 'me' : assignment.menteeName}
+              className={cn(
+                'flex items-center gap-1.5 text-xs',
+                assignment.isCurrentUser ? 'font-semibold text-foreground' : 'text-muted-foreground'
+              )}
+            >
               {assignment.status === 'submitted' ? (
                 <Check size={14} className="text-success" />
               ) : (
                 <span className="h-3.5 w-3.5 rounded-full border border-border" />
               )}
-              {assignment.menteeName}
+              {assignment.isCurrentUser ? 'You' : assignment.menteeName}
             </div>
           ))}
         </div>

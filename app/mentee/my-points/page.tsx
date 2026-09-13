@@ -1,4 +1,5 @@
 import { GrowthBadge } from '@/components/leaderboard/growth-badge'
+import { GrowthPath } from '@/components/leaderboard/growth-path'
 import { PointLogList } from '@/components/points/point-log-list'
 import { PageHeader } from '@/components/shared/page-header'
 import { getSession } from '@/lib/auth/session'
@@ -23,6 +24,9 @@ export default async function MyPointsPage() {
     <main className="mx-auto max-w-lg px-4 py-6">
       <PageHeader title="My points" description={`Total: ${mentee?.total_points ?? 0} pts`} />
       <GrowthBadge totalPoints={mentee?.total_points ?? 0} levels={levels} className="mb-4" />
+      <div className="mb-4">
+        <GrowthPath totalPoints={mentee?.total_points ?? 0} levels={levels} />
+      </div>
       <PointLogList logs={logs ?? []} />
     </main>
   )
